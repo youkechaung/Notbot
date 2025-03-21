@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}验证邮箱 - NotBot{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-card {
+        max-width: 400px;
+        margin: 2rem auto;
+    }
+    .auth-card .card-body {
+        padding: 2.5rem;
+    }
+    .auth-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    .auth-subtitle {
+        text-align: center;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+    .form-label {
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+    .form-control {
+        background-color: #f8fafc;
+        text-align: center;
+        font-size: 1.5rem;
+        letter-spacing: 0.5rem;
+    }
+    .btn-verify {
+        width: 100%;
+        padding: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    .btn-resend {
+        width: 100%;
+        font-weight: 500;
+    }
+    .input-icon {
+        position: relative;
+    }
+    .input-icon i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+    }
+    .verification-email {
+        color: var(--primary-color);
+        font-weight: 500;
+    }
+    .timer {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        text-align: center;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-card card fade-in">
+    <div class="card-body">
+        <h2 class="auth-title">
+            <i class="fas fa-envelope me-2"></i>
+            验证邮箱
+        </h2>
+        <p class="auth-subtitle">
+            我们已经发送验证码到你的邮箱
+            {% if user and user.email %}
+            <br><span class="verification-email">{{ user.email }}</span>
+            {% endif %}
+        </p>
+        <form method="POST">
+            <div class="mb-4">
+                <label for="code" class="form-label">输入6位验证码</label>
+                <input type="text" class="form-control" id="code" name="code" 
+                       required pattern="[0-9]{6}" maxlength="6"
+                       autocomplete="off">
+            </div>
+            <button type="submit" class="btn btn-primary btn-verify">
+                <i class="fas fa-check-circle me-2"></i>验证
+            </button>
+            <a href="{{ url_for('resend_code', user_id=request.view_args.user_id) }}" 
+               class="btn btn-outline-secondary btn-resend" id="resendBtn">
+                <i class="fas fa-redo me-2"></i>重新发送验证码
+            </a>
+            <div class="timer" id="timer"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const codeInput = document.getElementById('code');
+    const resendBtn = document.getElementById('resendBtn');
+    const timerDiv = document.getElementById('timer');
+    let countdown = 60;
+    
+    // 自动跳到下一个输入框
+    codeInput.addEventListener('input', function(e) {
+        if (this.value.length === 6) {
+            this.blur();
+        }
+    });
+    
+    // 只允许输入数字
+    codeInput.addEventListener('keypress', function(e) {
+        if (!/\d/.test(e.key)) {
+            e.preventDefault();
+        }
+    });
+    
+    // 倒计时功能
+    function updateTimer() {
+        if (countdown > 0) {
+            timerDiv.textContent = `${countdown} 秒后可重新发送`;
+            resendBtn.classList.add('disabled');
+            countdown--;
+            setTimeout(updateTimer, 1000);
+        } else {
+            timerDiv.textContent = '';
+            resendBtn.classList.remove('disabled');
+        }
+    }
+    
+    // 如果是重新发送后回来，开始倒计时
+    if (window.location.href.includes('resend_code')) {
+        updateTimer();
+    }
+    
+    // 点击重新发送按钮
+    resendBtn.addEventListener('click', function(e) {
+        if (this.classList.contains('disabled')) {
+            e.preventDefault();
+        } else {
+            countdown = 60;
+            updateTimer();
+        }
+    });
+});
+</script>
+{% endblock %}

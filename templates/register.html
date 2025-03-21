@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}注册 - NotBot{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-card {
+        max-width: 400px;
+        margin: 2rem auto;
+    }
+    .auth-card .card-body {
+        padding: 2.5rem;
+    }
+    .auth-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .form-label {
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+    .form-control {
+        background-color: #f8fafc;
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: var(--text-secondary);
+    }
+    .auth-footer a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+    .btn-register {
+        width: 100%;
+        padding: 0.75rem;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+    .input-icon {
+        position: relative;
+    }
+    .input-icon i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+    }
+    .input-icon input {
+        padding-left: 2.75rem;
+    }
+    .password-requirements {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+    }
+    .password-requirements i {
+        color: var(--success-color);
+        margin-right: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-card card fade-in">
+    <div class="card-body">
+        <h2 class="auth-title">
+            <i class="fas fa-user-plus me-2"></i>
+            注册 NotBot
+        </h2>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="email" class="form-label">邮箱地址</label>
+                <div class="input-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">密码</label>
+                <div class="input-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" class="form-control" id="password" name="password" 
+                           required minlength="6" 
+                           pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}"
+                           title="密码至少包含6个字符，必须包含大小写字母和数字">
+                </div>
+                <div class="password-requirements">
+                    <p class="mb-1"><i class="fas fa-check-circle"></i> 至少6个字符</p>
+                    <p class="mb-1"><i class="fas fa-check-circle"></i> 包含大写字母</p>
+                    <p class="mb-1"><i class="fas fa-check-circle"></i> 包含小写字母</p>
+                    <p class="mb-0"><i class="fas fa-check-circle"></i> 包含数字</p>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-register">
+                <i class="fas fa-user-plus me-2"></i>注册
+            </button>
+        </form>
+        <div class="auth-footer">
+            <p class="mb-0">已有账号？ <a href="{{ url_for('login') }}">立即登录</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const password = document.getElementById('password');
+    const requirements = document.querySelectorAll('.password-requirements i');
+    
+    password.addEventListener('input', function() {
+        const value = this.value;
+        
+        // 检查长度
+        requirements[0].style.color = value.length >= 6 ? 'var(--success-color)' : 'var(--text-secondary)';
+        
+        // 检查大写字母
+        requirements[1].style.color = /[A-Z]/.test(value) ? 'var(--success-color)' : 'var(--text-secondary)';
+        
+        // 检查小写字母
+        requirements[2].style.color = /[a-z]/.test(value) ? 'var(--success-color)' : 'var(--text-secondary)';
+        
+        // 检查数字
+        requirements[3].style.color = /\d/.test(value) ? 'var(--success-color)' : 'var(--text-secondary)';
+    });
+});
+</script>
+{% endblock %}
