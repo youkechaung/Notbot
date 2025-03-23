@@ -10,19 +10,6 @@ from chat import chatgpt  # 导入chat函数
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE_DIR, 'wechat_config.json')
 
-def add_chat_to_listen(wx_instance, chat_name):
-    """安全地添加聊天到监听列表"""
-    try:
-        # 先尝试打开聊天窗口
-        wx_instance.ChatWith(who=chat_name)
-        time.sleep(1)  # 等待窗口打开
-        # 再添加到监听
-        wx_instance.AddListenChat(who=chat_name, savepic=True)
-        print(f"成功添加监听: {chat_name}")
-        return True
-    except Exception as e:
-        print(f"添加监听失败 - {chat_name}: {str(e)}")
-        return False
 
 def load_listen_list():
     """加载并更新监听列表"""
@@ -30,15 +17,16 @@ def load_listen_list():
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             data = json.load(f)
             # 将监听列表转换为字典，key是名称，value是类型
-            global listen_list
             listen_list = {item['name']: item['type'] for item in data}
             
             print("\n当前监听列表:")
-            for name, type_ in listen_list.items():
-                print(f"- {name} ({type_})")
-                # 尝试添加到微信监听
-                add_chat_to_listen(wx, name)
-            print()  # 空行
+            for chat_name, type_ in listen_list.items():
+                print(f"- {chat_name} ({type_})")
+                try:
+                    wx.AddListenChat(who=chat_name, savepic=True)
+                    print(f"成功添加监听: {chat_name}")
+                except Exception as e:
+                    print(f"添加监听失败 - {chat_name}: {str(e)}")
     except Exception as e:
         print(f"加载配置文件失败：{e}")
         listen_list = {}
@@ -46,8 +34,6 @@ def load_listen_list():
 # 获取微信窗口对象
 wx = WeChat()
 print("初始化成功，获取到已登录窗口")
-
-# 初始化监听列表并立即加载
 listen_list = {}
 load_listen_list()  # 启动时立即加载一次
 
