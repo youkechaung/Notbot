@@ -357,11 +357,12 @@
                             {% for contact in contacts %}
                             <div class="contact-item">
                                 <div class="form-check">
-                                    <input type="checkbox" class="form-check-input contact-checkbox" value="{{ contact }}">
-                                    <div class="contact-status"></div>
-                                    <label class="contact-name">
-                                        {{ contact }}
-                                        <small class="ms-2 text-muted">(在线)</small>
+                                    <input class="form-check-input" type="checkbox" value="{{ contact.name }}" id="contact{{ loop.index }}">
+                                    <label class="form-check-label" for="contact{{ loop.index }}">
+                                        {{ contact.name }}
+                                        <span class="badge {% if contact.type == 'group' %}bg-info{% else %}bg-primary{% endif %} ms-2">
+                                            {{ '群聊' if contact.type == 'group' else '个人' }}
+                                        </span>
                                     </label>
                                 </div>
                             </div>
@@ -375,11 +376,13 @@
                         </div>
                         <form id="addContactForm" class="add-contact-form">
                             <div class="input-group">
-                                <input type="text" id="newContact" class="form-control" 
-                                       placeholder="输入联系人名称" required
-                                       aria-label="联系人名称">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-plus me-2"></i>添加
+                                <input type="text" class="form-control" id="newContact" name="contact" placeholder="输入联系人名称" required>
+                                <select class="form-select" id="contactType" style="max-width: 100px;">
+                                    <option value="personal">个人</option>
+                                    <option value="group">群聊</option>
+                                </select>
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-plus"></i> 添加
                                 </button>
                             </div>
                         </form>
@@ -420,7 +423,10 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ contact: contact })
+                    body: JSON.stringify({ 
+                        contact: contact,
+                        type: document.getElementById('contactType').value
+                    })
                 });
                 
                 const data = await response.json();

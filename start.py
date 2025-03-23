@@ -30,9 +30,9 @@ def main():
     try:
         # 启动 wx_easy.py
         print("正在启动 wx_easy.py...")
-        # wx_process = subprocess.Popen([sys.executable, 'wx_easy.py'], 
-        #                             cwd=base_dir)
-        # processes.append(wx_process)
+        wx_process = subprocess.Popen([sys.executable, 'wx_easy.py'], 
+                                    cwd=base_dir)
+        processes.append(wx_process)
         
         # 等待一下确保 wx_easy.py 启动
         time.sleep(2)
@@ -48,9 +48,9 @@ def main():
         
         # 等待任意子进程结束
         while True:
-            # if wx_process.poll() is not None:
-            #     print("WeChat 服务已停止运行")
-            #     break
+            if wx_process.poll() is not None:
+                print("WeChat 服务已停止运行")
+                break
             if app_process.poll() is not None:
                 print("Web 服务已停止运行")
                 break

@@ -55,7 +55,11 @@ def load_config():
     if os.path.exists(CONFIG_FILE):
         try:
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                data = json.load(f)
+                # 兼容旧格式数据
+                if data and isinstance(data[0], str):
+                    return [{"name": name, "type": "personal"} for name in data]
+                return data
         except:
             return []
     return []
@@ -70,9 +74,11 @@ def save_config(listen_list):
         with open(WXEASY_FILE, 'r', encoding='utf-8') as f:
             lines = f.readlines()
         
+        # 转换为仅包含名称的列表，以保持兼容性
+        names_only = [item["name"] for item in listen_list]
         for i, line in enumerate(lines):
             if 'listen_list = ' in line:
-                lines[i] = f"listen_list = {repr(listen_list)}\n"
+                lines[i] = f"listen_list = {repr(names_only)}\n"
                 break
         
         with open(WXEASY_FILE, 'w', encoding='utf-8') as f:
@@ -167,14 +173,19 @@ def get_contacts():
 def add_contact():
     data = request.get_json()
     contact = data.get('contact', '').strip()
+    contact_type = data.get('type', 'personal')  # 默认为个人类型
+    
     if not contact:
         return jsonify({'error': '联系人名称不能为空'}), 400
     
+    if contact_type not in ['personal', 'group']:
+        return jsonify({'error': '联系人类型无效'}), 400
+    
     contacts = load_config()
-    if contact in contacts:
+    if any(c['name'] == contact for c in contacts):
         return jsonify({'error': '联系人已存在'}), 400
     
-    contacts.append(contact)
+    contacts.append({"name": contact, "type": contact_type})
     error = save_config(contacts)
     if error is True:
         return jsonify({'message': '联系人添加成功'})
@@ -190,7 +201,7 @@ def delete_contacts():
         return jsonify({'error': '未指定要删除的联系人'}), 400
     
     current_contacts = load_config()
-    new_contacts = [c for c in current_contacts if c not in contacts_to_delete]
+    new_contacts = [c for c in current_contacts if c['name'] not in contacts_to_delete]
     
     error = save_config(new_contacts)
     if error is True:

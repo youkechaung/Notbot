@@ -4,57 +4,33 @@ import sys
 import json
 import os
 import urllib.request
+from chat import chatgpt  # 导入chat函数
 
 # 获取当前脚本所在目录的绝对路径
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE_DIR, 'wechat_config.json')
 
-def get_kimi_response(message):
-    api_key = "sk-yIkBArpEqL1qpI3vj5p0vh0dR1Z6BI7YaBRnTmdVDvho3cYH"
-    url = "https://api.moonshot.cn/v1/chat/completions"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {api_key}"
-    }
-    data = {
-        "model": "moonshot-v1-8k",
-        "messages": [{"role": "user", "content": message}],
-        "temperature": 0.7,
-        "max_tokens": 800
-    }
-    
-    while True:
-        try:
-            req = urllib.request.Request(
-                url,
-                data=json.dumps(data).encode('utf-8'),
-                headers=headers,
-                method='POST'
-            )
-            with urllib.request.urlopen(req) as response:
-                result = json.loads(response.read().decode('utf-8'))
-                return result['choices'][0]['message']['content']
-        except Exception as e:
-            print(f"API调用错误: {e}")
-            print("等待30秒后重试...")
-            time.sleep(30)
-
 def load_listen_list():
-    if os.path.exists(CONFIG_FILE):
-        try:
-            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except Exception as e:
-            print(f"读取配置文件错误: {e}")
-            return []
-    return []
+    try:
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            # 将监听列表转换为字典，key是名称，value是类型
+            global listen_list
+            listen_list = {item['name']: item['type'] for item in data}
+            print("\n当前监听列表:")
+            for name, type_ in listen_list.items():
+                print(f"- {name} ({type_})")
+            print()  # 空行
+    except Exception as e:
+        print("加载配置文件失败：", e)
+        listen_list = {}
 
 # 获取微信窗口对象
 wx = WeChat()
 print("初始化成功，获取到已登录窗口")
 
 # 初始化监听列表
-current_listen_list = set()
+listen_list = {}
 
 # 持续监听消息，并且收到消息后回复
 wait = 1  # 设置1秒查看一次是否有新消息
@@ -66,23 +42,7 @@ while True:
     
     # 定期检查配置更新
     if current_time - last_config_check >= config_check_interval:
-        new_listen_list = set(load_listen_list())
-        
-        # 如果列表有变化
-        if new_listen_list != current_listen_list:
-            print("检测到监听列表更新:")
-            # 移除不再监听的对象
-            for contact in current_listen_list - new_listen_list:
-                wx.RemoveListenChat(contact)
-                print(f"- 移除监听: {contact}")
-            
-            # 添加新的监听对象
-            for contact in new_listen_list - current_listen_list:
-                wx.AddListenChat(who=contact, savepic=True)
-                print(f"+ 添加监听: {contact}")
-            
-            current_listen_list = new_listen_list
-        
+        load_listen_list()
         last_config_check = current_time
     
     # 处理消息
@@ -92,9 +52,19 @@ while True:
         one_msgs = msgs.get(chat)   # 获取消息内容
         # 回复收到
         for msg in one_msgs:
-            if msg.type == 'friend':
-                content = get_kimi_response(msg.content)   # 获取消息内容，字符串类型的消息内容
+            # 根据联系人类型判断处理方式
+            contact_type = listen_list.get(who)
+            print(f"收到消息 - 发送者: {who}, 类型: {contact_type}, 消息类型: {msg.type}, 内容: {msg.content}")  # 调试信息
+            
+            if contact_type == 'personal' and msg.type == 'friend':
+                content = chatgpt(who, msg.content)   # 使用新的chat函数
                 print(f'【{who}】：{content}')
                 chat.SendMsg(content)  # 回复收到
+            elif contact_type == 'group' and msg.type == 'friend' and msg.content.startswith('@'+wx.nickname):
+                # 去掉@前缀后的内容
+                pure_content = msg.content.replace('@'+wx.nickname, '').strip()
+                content = chatgpt(who, pure_content)  # 使用新的chat函数
+                print(f'【{who}】：{content}')
+                chat.SendMsg(content)
     
     time.sleep(wait)

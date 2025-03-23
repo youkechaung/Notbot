@@ -1,1 +1,26 @@
-["Rafael", "You", "Chloe李李💫", "火星前夜", "教授们", "事事如意"]
+[
+  {
+    "name": "Rafael",
+    "type": "personal"
+  },
+  {
+    "name": "You",
+    "type": "personal"
+  },
+  {
+    "name": "Chloe李李💫",
+    "type": "personal"
+  },
+  {
+    "name": "事事如意",
+    "type": "personal"
+  },
+  {
+    "name": "教授们",
+    "type": "group"
+  },
+  {
+    "name": "尤闯",
+    "type": "personal"
+  }
+]
