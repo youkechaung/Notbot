@@ -1,17 +1,36 @@
 from openai import OpenAI
 import json
 import os
-import time
 from datetime import datetime
 
 # 获取当前脚本所在目录的绝对路径
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HISTORY_FILE = os.path.join(BASE_DIR, 'chat_history.json')
 
-# 初始化 OpenAI 客户端
+# 模型配置
+MODEL_CONFIGS = {
+    'moonshot': {
+        'model': 'moonshot-v1-8k',
+        'base_url': 'https://api.moonshot.cn/v1',
+        'api_key': 'sk-yIkBArpEqL1qpI3vj5p0vh0dR1Z6BI7YaBRnTmdVDvho3cYH'
+    },
+    'ark': {
+        'model': 'doubao-1-5-pro-32k-250115',
+        'base_url': 'https://ark.cn-beijing.volces.com/api/v3',
+        'api_key': 'e2e82631-47e8-4aae-a701-8dfc45701f8b'
+    }
+}
+
+# 从环境变量获取配置，默认使用 moonshot
+selected_model = os.getenv('SELECTED_MODEL', 'moonshot')
+if selected_model not in MODEL_CONFIGS:
+    selected_model = 'moonshot'
+
+config = MODEL_CONFIGS[selected_model]
+model_name = config['model']
 client = OpenAI(
-    api_key="sk-yIkBArpEqL1qpI3vj5p0vh0dR1Z6BI7YaBRnTmdVDvho3cYH",  # 替换为你的 Kimi API Key
-    base_url="https://api.moonshot.cn/v1",
+    api_key=os.getenv(f'{selected_model.upper()}_API_KEY', config['api_key']),
+    base_url=config['base_url']
 )
 
 # 存储每个用户的对话历史
@@ -51,6 +70,10 @@ def cleanup_old_messages(messages, max_messages=50):
 # 初始加载历史记录
 load_history()
 
+def direct_chat(query):
+    """直接与AI对话的模式"""
+    return chatgpt("direct_user", query)
+
 def chatgpt(user_id, query):
     # 如果用户第一次对话，初始化其对话历史
     if user_id not in conversations:
@@ -73,7 +96,7 @@ def chatgpt(user_id, query):
     try:
         # 调用 Kimi API 获取回复
         completion = client.chat.completions.create(
-            model="moonshot-v1-8k",
+            model=model_name,
             messages=conversations[user_id]['messages'],
             temperature=0.3,
         )

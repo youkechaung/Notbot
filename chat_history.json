@@ -1,0 +1,27 @@
+{
+  "direct_user": {
+    "messages": [
+      {
+        "role": "system",
+        "content": "你是现实世界的一个正常人，礼貌、友善、理智。"
+      },
+      {
+        "role": "user",
+        "content": "hello"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello! How can I assist you today? If you have any questions or need help with something, feel free to ask."
+      },
+      {
+        "role": "user",
+        "content": "你是谁"
+      },
+      {
+        "role": "assistant",
+        "content": "你好！我是 Moonshot AI 开发的一个人工智能助手，擅长中英文对话，可以帮助你获取信息、解答疑问。有什么可以帮你的吗？"
+      }
+    ],
+    "last_interaction": "2025-03-25T01:02:03.030747"
+  }
+}
