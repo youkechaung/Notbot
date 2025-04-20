@@ -30,5 +30,17 @@
   {
     "name": "滴滴美团留学生",
     "type": "group"
+  },
+  {
+    "name": "火星前夜",
+    "type": "group"
+  },
+  {
+    "name": "美丽草原",
+    "type": "personal"
+  },
+  {
+    "name": "事事如意",
+    "type": "personal"
   }
 ]

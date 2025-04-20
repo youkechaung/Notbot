@@ -94,7 +94,7 @@ def chatgpt(user_id, query):
             # 保存更新后的历史记录
             save_history()
             
-            return response
+            return response.strip()
         except Exception as e:
             print(f"API调用错误: {e}")
             if attempt < max_retries - 1:
