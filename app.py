@@ -76,13 +76,6 @@ def save_config(listen_list):
         
         # 转换为仅包含名称的列表，以保持兼容性
         names_only = [item["name"] for item in listen_list]
-        for i, line in enumerate(lines):
-            if 'listen_list = ' in line:
-                lines[i] = f"listen_list = {repr(names_only)}\n"
-                break
-        
-        with open(WXEASY_FILE, 'w', encoding='utf-8') as f:
-            f.writelines(lines)
         return True
     except Exception as e:
         return str(e)
