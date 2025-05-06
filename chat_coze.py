@@ -60,7 +60,7 @@ def clean_response(response):
     return response.strip()
 
 # 初始化 Coze 客户端
-coze = Coze(auth=TokenAuth('pat_qy4IAlYbV6z80dHMgoqhBF1LlUkkoOqndl7L8zSk9UIib3Z4ygDIfeNMZgvShe1k'), base_url=COZE_CN_BASE_URL)
+coze = Coze(auth=TokenAuth('pat_JJQZ6rSiGyZvVOoSZqtD4Q8HjC5zZ2vRK8hxAxVNMAyGc6WG7o0R9p2UvXBQI88t'), base_url=COZE_CN_BASE_URL)
 
 # 初始加载历史记录
 load_history()
@@ -87,7 +87,7 @@ def chat_coze(user_id, query):
             else Message.build_assistant_answer(msg['content'])
             for msg in conversations[user_id]['messages']
             if msg['role'] != 'system'
-        ]
+        ][-6:]
         
         # 添加当前问题
         history_messages.append(Message.build_user_question_text(query))
